@@ -10,7 +10,7 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from PIL import Image
 import pydicom
 
-app = Flask(name)
+app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
