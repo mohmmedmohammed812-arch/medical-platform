@@ -149,7 +149,7 @@ def upload():
         "coronal": to_png(co),
         "sagittal": to_png(sa),
     })
-[5/30/2026 9:24 PM] Muhammed Imran: @app.route("/slice", methods=["POST"])
+@app.route("/slice", methods=["POST"])
 def slice_view():
     body = request.get_json(silent=True) or {}
     sid = body.get("session_id")
