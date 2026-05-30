@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroScan — Universal Medical Imaging Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060a0f;
+    --surface: #0d1520;
+    --surface2: #111d2e;
+    --border: #1a2d45;
+    --accent: #00d4ff;
+    --accent2: #00ff9d;
+    --accent3: #ff6b35;
+    --text: #e0eaf5;
+    --muted: #4a6a8a;
+    --danger: #ff3366;
+    --panel-bg: #0a1219;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    border: 2px solid var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 0 12px rgba(0,212,255,0.4);
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%,100% { box-shadow: 0 0 12px rgba(0,212,255,0.3); }
+    50% { box-shadow: 0 0 24px rgba(0,212,255,0.7); }
+  }
+
+  .top-tools {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .tool-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .tool-btn:hover { background: var(--border); border-color: var(--accent); color: var(--accent); }
+  .tool-btn.active { background: rgba(0,212,255,0.15); border-color: var(--accent); color: var(--accent); }
+
+  .top-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 6px var(--accent2);
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── MAIN LAYOUT ── */
+  #main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  #sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .sidebar-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* Upload Zone */
+  #upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+  #upload-zone:hover, #upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+    box-shadow: inset 0 0 20px rgba(0,212,255,0.05);
+  }
+  #upload-zone .upload-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  #upload-zone p {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  #upload-zone span { color: var(--accent); font-weight: 600; }
+  #file-input { display: none; }
+
+  .file-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    margin: 2px;
+  }
+  .badge-dcm { background: rgba(0,212,255,0.15); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+  .badge-zip { background: rgba(0,255,157,0.1); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
+  .badge-exe { background: rgba(255,107,53,0.1); color: var(--accent3); border: 1px solid rgba(255,107,53,0.3); }
+
+  /* Series list */
+  #series-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .series-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+  }
+  .series-item:hover { background: var(--surface2); border-color: var(--border); }
+  .series-item.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+  .series-thumb {
+    width: 36px; height: 36px;
+    background: var(--panel-bg);
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    color: var(--muted);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .series-info { flex: 1; min-width: 0; }
+  .series-name { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .series-meta { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+  /* Controls */
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .control-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    width: 55px;
+    flex-shrink: 0;
+  }
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(0,212,255,0.5);
+  }
+  .range-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    width: 30px;
+    text-align: right;
+  }
+
+  /* Patient info */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .info-cell {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 8px;
+  }
+  .info-key {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+  .info-val {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── VIEWER AREA ── */
+  #viewer-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #viewer-tabs {
+    display: flex;
+    gap: 1px;
+    background: var(--bg);
+    padding: 8px 12px 0;
+    flex-shrink: 0;
+  }
+
+  .view-tab {
+    padding: 7px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    border: 1px solid transparent;
+    border-bottom: none;
+    color: var(--muted);
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .view-tab:hover { color: var(--text); background: var(--surface); }
+  .view-tab.active {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--accent);
+  }
+
+  #viewer-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    background: var(--bg);
+    padding: 2px;
+    overflow: hidden;
+  }
+
+  #viewer-grid.single { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+  #viewer-grid.triple {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+  }
+
+  .view-panel {
+    background: var(--panel-bg);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+  }
+
+  .view-panel:hover { border-color: rgba(0,212,255,0.4); }
+  .view-panel.focused { border-color: var(--accent); }
+
+  .panel-label {
+    position: absolute;
+    top: 8px; left: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .panel-label.axial { color: #ffcc00; }
+  .panel-label.coronal { color: #00ff9d; }
+  .panel-label.sagittal { color: #ff6b35; }
+  .panel-label.vol3d { color: #c084fc; }
+
+  .panel-info {
+    position: absolute;
+    bottom: 8px; left: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    z-index: 10;
+    pointer-events: none;
+    line-height: 1.6;
+  }
+
+  .panel-info-right {
+    position: absolute;
+    bottom: 8px; right: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    z-index: 10;
+    pointer-events: none;
+    text-align: right;
+  }
+
+  canvas.view-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  /* Crosshair */
+  .crosshair {
+    position: absolute;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .crosshair-h {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: rgba(255,204,0,0.6);
+    top: 50%;
+  }
+  .crosshair-v {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(255,204,0,0.6);
+    left: 50%;
+  }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--muted);
+    text-align: center;
+    padding: 30px;
+  }
+  .empty-icon {
+    font-size: 48px;
+    opacity: 0.3;
+  }
+  .empty-state h3 {
+    font-size: 14px;
+    color: var(--text);
+    opacity: 0.5;
+  }
+  .empty-state p {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    line-height: 1.6;
+    max-width: 200px;
+  }
+
+  /* ── RIGHT PANEL ── */
+  #right-panel {
+    width: 220px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  /* Slice slider vertical */
+  .slice-control {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .slice-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .slice-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .slice-plane {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    width: 20px;
+    flex-shrink: 0;
+  }
+  .slice-plane.a { color: #ffcc00; }
+  .slice-plane.c { color: #00ff9d; }
+  .slice-plane.s { color: #ff6b35; }
+
+  /* Measurements */
+  .measurement-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(26,45,69,0.5);
+    font-size: 11px;
+  }
+  .measurement-item:last-child { border-bottom: none; }
+  .m-label { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 9px; }
+  .m-value { color: var(--accent2); font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  /* 3D Canvas */
+  #canvas3d {
+    width: 100%; height: 100%;
+    display: block;
+  }
+
+  /* Toolbar bottom */
+  #bottom-bar {
+    height: 36px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .bottom-info {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .bottom-info span { color: var(--text); }
+
+  /* Loading overlay */
+  #loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6,10,15,0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    gap: 20px;
+    display: none;
+  }
+  .loading-ring {
+    width: 60px; height: 60px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-right-color: var(--accent2);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+  .loading-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Notification toast */
+  #toast {
+    position: fixed;
+    bottom: 50px; right: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    z-index: 2000;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    max-width: 300px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* Annotation overlay */
+  .annotation-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    cursor: crosshair;
+    pointer-events: none;
+  }
+  .annotation-canvas.active { pointer-events: all; }
+
+  /* Histogram */
+  #histogram-canvas {
+    width: 100%;
+    height: 60px;
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--panel-bg);
+  }
+
+  /* Colormap selector */
+  .colormap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+  .colormap-btn {
+    height: 24px;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0;
+    transition: border-color 0.2s;
+  }
+  .colormap-btn:hover, .colormap-btn.active { border-color: var(--accent); }
+  .cm-gray { background: linear-gradient(90deg, #000, #fff); }
+  .cm-hot { background: linear-gradient(90deg, #000, #800, #f80, #ff0, #fff); }
+  .cm-bone { background: linear-gradient(90deg, #000, #446, #99a, #ddf, #fff); }
+  .cm-cool { background: linear-gradient(90deg, #0ff, #f0f); }
+  .cm-jet { background: linear-gradient(90deg, #00f, #0ff, #0f0, #ff0, #f00); }
+  .cm-viridis { background: linear-gradient(90deg, #440154, #31688e, #35b779, #fde725); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    #sidebar { width: 180px; }
+    #right-panel { width: 180px; }
+  }
+  @media (max-width: 700px) {
+    #sidebar, #right-panel { display: none; }
+    #viewer-grid { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  }
+
+  /* Measurement tool cursor */
+  .measuring canvas { cursor: crosshair; }
+
+  .panel-top-right {
+    position: absolute;
+    top: 8px; right: 10px;
+    display: flex; gap: 4px;
+    z-index: 10;
+  }
+  .panel-mini-btn {
+    width: 20px; height: 20px;
+    background: rgba(13,21,32,0.8);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .panel-mini-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .wl-indicator {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,204,0,0.7);
+    pointer-events: none;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">⊕</div>
+    NEUROSCAN
+  </div>
+
+  <div class="top-tools">
+    <button class="tool-btn active" onclick="setActiveTool('navigate')" id="btn-nav">⊕ NAVIGATE</button>
+    <button class="tool-btn" onclick="setActiveTool('window')" id="btn-wl">◐ W/L</button>
+    <button class="tool-btn" onclick="setActiveTool('measure')" id="btn-msr">⟷ MEASURE</button>
+    <button class="tool-btn" onclick="setActiveTool('annotate')" id="btn-ann">✎ ANNOTATE</button>
+    <button class="tool-btn" onclick="resetView()">↺ RESET</button>
+    <button class="tool-btn" onclick="invertColors()" id="btn-inv">◑ INVERT</button>
+    <button class="tool-btn" onclick="exportFrame()">↓ EXPORT</button>
+  </div>
+
+  <div class="top-status">
+    <div class="status-dot"></div>
+    <span id="status-text">READY</span>
+    <span>|</span>
+    <span id="voxel-info">POS: — — —</span>
+    <span>|</span>
+    <span id="hu-display">HU: —</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- LEFT SIDEBAR -->
+  <div id="sidebar">
+
+    <!-- Upload -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">📂 Load Study</div>
+      <div id="upload-zone" onclick="document.getElementById('file-input').click()"
+           ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <span class="upload-icon">⊕</span>
+        <p>Drop <span>DICOM</span> files<br>or <span>ZIP</span> package<br>or <span>EXE</span> bundle</p>
+        <div style="margin-top:10px;">
+          <span class="file-badge badge-dcm">.DCM</span>
+          <span class="file-badge badge-zip">.ZIP</span>
+          <span class="file-badge badge-exe">.EXE</span>
+        </div>
+      </div>
+      <input type="file" id="file-input" multiple accept=".dcm,.zip,.exe,image/*"
+             onchange="handleFiles(this.files)">
+      <div style="margin-top:8px;">
+        <button class="tool-btn" style="width:100%; margin-top:4px;" onclick="loadDemoData()">▶ LOAD DEMO MRI</button>
+        <button class="tool-btn" style="width:100%; margin-top:4px;" onclick="loadDemoCBCT()">▶ LOAD DEMO CBCT</button>
+      </div>
+    </div>
+
+    <!-- Series -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">📋 Series</div>
+      <div id="series-list">
+        <div class="series-item" style="color:var(--muted); font-size:11px; font-family:'Space Mono',monospace;">
+          No series loaded
+        </div>
+      </div>
+    </div>
+
+    <!-- Patient Info -->
+    <div class="sidebar-section" id="patient-info-section">
+      <div class="sidebar-label">🪪 Patient</div>
+      <div class="info-grid">
+        <div class="info-cell"><div class="info-key">NAME</div><div class="info-val" id="pt-name">—</div></div>
+        <div class="info-cell"><div class="info-key">ID</div><div class="info-val" id="pt-id">—</div></div>
+        <div class="info-cell"><div class="info-key">MODALITY</div><div class="info-val" id="pt-mod">—</div></div>
+        <div class="info-cell"><div class="info-key">SLICES</div><div class="info-val" id="pt-slices">—</div></div>
+        <div class="info-cell"><div class="info-key">THICKNESS</div><div class="info-val" id="pt-thick">—</div></div>
+        <div class="info-cell"><div class="info-key">FOV</div><div class="info-val" id="pt-fov">—</div></div>
+      </div>
+    </div>
+
+    <!-- Window/Level -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">◐ Window / Level</div>
+      <div class="control-row">
+        <span class="control-label">WIDTH</span>
+        <input type="range" id="ww-slider" min="1" max="4000" value="400" oninput="updateWindowLevel()">
+        <span class="range-val" id="ww-val">400</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">LEVEL</span>
+        <input type="range" id="wl-slider" min="-1000" max="3000" value="40" oninput="updateWindowLevel()">
+        <span class="range-val" id="wl-val">40</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">BRIGHTNESS</span>
+        <input type="range" id="bright-slider" min="-100" max="100" value="0" oninput="updateFilters()">
+        <span class="range-val" id="bright-val">0</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">CONTRAST</span>
+        <input type="range" id="contrast-slider" min="0.1" max="3" step="0.1" value="1" oninput="updateFilters()">
+        <span class="range-val" id="contrast-val">1.0</span>
+      </div>
+
+      <!-- Presets -->
+      <div style="margin-top:8px; display:flex; gap:4px; flex-wrap:wrap;">
+        <button class="tool-btn" onclick="setPreset('brain')" style="font-size:9px;padding:4px 8px;">BRAIN</button>
+        <button class="tool-btn" onclick="setPreset('bone')" style="font-size:9px;padding:4px 8px;">BONE</button>
+        <button class="tool-btn" onclick="setPreset('lung')" style="font-size:9px;padding:4px 8px;">LUNG</button>
+        <button class="tool-btn" onclick="setPreset('soft')" style="font-size:9px;padding:4px 8px;">SOFT</button>
+        <button class="tool-btn" onclick="setPreset('cbct')" style="font-size:9px;padding:4px 8px;">CBCT</button>
+      </div>
+    </div>
+
+    <!-- Colormap -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">🎨 Colormap</div>
+      <div class="colormap-grid">
+        <div class="colormap-btn cm-gray active" onclick="setColormap('gray')" title="Grayscale"></div>
+        <div class="colormap-btn cm-hot" onclick="setColormap('hot')" title="Hot"></div>
+        <div class="colormap-btn cm-bone" onclick="setColormap('bone')" title="Bone"></div>
+        <div class="colormap-btn cm-cool" onclick="setColormap('cool')" title="Cool"></div>
+        <div class="colormap-btn cm-jet" onclick="setColormap('jet')" title="Jet"></div>
+        <div class="colormap-btn cm-viridis" onclick="setColormap('viridis')" title="Viridis"></div>
+      </div>
+    </div>
+
+    <!-- Histogram -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">📊 Histogram</div>
+      <canvas id="histogram-canvas"></canvas>
+    </div>
+
+  </div>
+
+  <!-- VIEWER AREA -->
+  <div id="viewer-area">
+    <div id="viewer-tabs">
+      <div class="view-tab active" onclick="setViewMode('quad')">⊞ QUAD</div>
+      <div class="view-tab" onclick="setViewMode('axial')">⊙ AXIAL</div>
+      <div class="view-tab" onclick="setViewMode('coronal')">⊙ CORONAL</div>
+      <div class="view-tab" onclick="setViewMode('sagittal')">⊙ SAGITTAL</div>
+      <div class="view-tab" onclick="setViewMode('3d')">◈ 3D</div>
+      <div class="view-tab" onclick="setViewMode('mpr')">≡ MPR</div>
+    </div>
+
+    <div id="viewer-grid">
+
+      <!-- AXIAL PANEL -->
+      <div class="view-panel" id="panel-axial"
+           onmousemove="panelMouseMove(event,'axial')"
+           onmousedown="panelMouseDown(event,'axial')"
+           onmouseup="panelMouseUp(event)"
+           onwheel="panelWheel(event,'axial')"
+           onmouseleave="panelMouseLeave()">
+        <div class="panel-label axial">AXIAL</div>
+        <div class="wl-indicator" id="wl-ind-axial"></div>
+        <div class="panel-top-right">
+          <div class="panel-mini-btn" onclick="maximizePanel('axial')" title="Maximize">⊡</div>
+        </div>
+        <canvas class="view-canvas" id="canvas-axial"></canvas>
+        <div class="crosshair" id="cross-axial">
+          <div class="crosshair-h" id="cross-axial-h"></div>
+          <div class="crosshair-v" id="cross-axial-v"></div>
+        </div>
+        <canvas class="annotation-canvas" id="ann-axial"></canvas>
+        <div class="panel-info" id="info-axial">SLICE: — / —<br>WW: — WL: —</div>
+        <div class="panel-info-right" id="info-axial-r"></div>
+
+        <div class="empty-state" id="empty-axial">
+          <div class="empty-icon">⊕</div>
+          <h3>AXIAL VIEW</h3>
+          <p>Load a DICOM study<br>to begin imaging</p>
+        </div>
+      </div>
+
+      <!-- CORONAL PANEL -->
+      <div class="view-panel" id="panel-coronal"
+           onmousemove="panelMouseMove(event,'coronal')"
+           onmousedown="panelMouseDown(event,'coronal')"
+           onmouseup="panelMouseUp(event)"
+           onwheel="panelWheel(event,'coronal')"
+           onmouseleave="panelMouseLeave()">
+        <div class="panel-label coronal">CORONAL</div>
+        <div class="panel-top-right">
+          <div class="panel-mini-btn" onclick="maximizePanel('coronal')" title="Maximize">⊡</div>
+        </div>
+        <canvas class="view-canvas" id="canvas-coronal"></canvas>
+        <div class="crosshair" id="cross-coronal">
+          <div class="crosshair-h"></div>
+          <div class="crosshair-v"></div>
+        </div>
+        <canvas class="annotation-canvas" id="ann-coronal"></canvas>
+        <div class="panel-info" id="info-coronal">SLICE: — / —</div>
+
+        <div class="empty-state" id="empty-coronal">
+          <div class="empty-icon">⊕</div>
+          <h3>CORONAL VIEW</h3>
+          <p>Reconstructed from<br>volume data</p>
+        </div>
+      </div>
+
+      <!-- SAGITTAL PANEL -->
+      <div class="view-panel" id="panel-sagittal"
+           onmousemove="panelMouseMove(event,'sagittal')"
+           onmousedown="panelMouseDown(event,'sagittal')"
+           onmouseup="panelMouseUp(event)"
+           onwheel="panelWheel(event,'sagittal')"
+           onmouseleave="panelMouseLeave()">
+        <div class="panel-label sagittal">SAGITTAL</div>
+        <div class="panel-top-right">
+          <div class="panel-mini-btn" onclick="maximizePanel('sagittal')" title="Maximize">⊡</div>
+        </div>
+        <canvas class="view-canvas" id="canvas-sagittal"></canvas>
+        <div class="crosshair" id="cross-sagittal">
+          <div class="crosshair-h"></div>
+          <div class="crosshair-v"></div>
+        </div>
+        <canvas class="annotation-canvas" id="ann-sagittal"></canvas>
+        <div class="panel-info" id="info-sagittal">SLICE: — / —</div>
+
+        <div class="empty-state" id="empty-sagittal">
+          <div class="empty-icon">⊕</div>
+          <h3>SAGITTAL VIEW</h3>
+          <p>Reconstructed from<br>volume data</p>
+        </div>
+      </div>
+
+      <!-- 3D PANEL -->
+      <div class="view-panel" id="panel-3d"
+           onmousedown="start3DRotate(event)"
+           onmousemove="do3DRotate(event)"
+           onmouseup="stop3DRotate()"
+           onwheel="zoom3D(event)"
+           onmouseleave="stop3DRotate()">
+        <div class="panel-label vol3d">3D VOLUME</div>
+        <div class="panel-top-right">
+          <div class="panel-mini-btn" onclick="toggle3DMode()" title="Toggle mode" id="btn3dmode">MIP</div>
+          <div class="panel-mini-btn" onclick="maximizePanel('3d')" title="Maximize">⊡</div>
+        </div>
+        <canvas id="canvas3d"></canvas>
+
+        <div class="empty-state" id="empty-3d">
+          <div class="empty-icon">◈</div>
+          <h3>3D VOLUME RENDER</h3>
+          <p>WebGL volume rendering<br>Axial + coronal + sagittal<br>maximum intensity</p>
+        </div>
+
+        <div class="panel-info" id="info-3d">ROTATE: drag<br>ZOOM: scroll<br>MODE: MIP</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="right-panel">
+
+    <!-- Slice Navigation -->
+    <div class="slice-control">
+      <div class="slice-title">⟷ SLICE NAVIGATION</div>
+      <div class="slice-row">
+        <span class="slice-plane a">A</span>
+        <input type="range" id="slice-a" min="0" max="100" value="50" oninput="updateSlice('axial', this.value)">
+        <span class="range-val" id="slice-a-val">50</span>
+      </div>
+      <div class="slice-row">
+        <span class="slice-plane c">C</span>
+        <input type="range" id="slice-c" min="0" max="100" value="50" oninput="updateSlice('coronal', this.value)">
+        <span class="range-val" id="slice-c-val">50</span>
+      </div>
+      <div class="slice-row">
+        <span class="slice-plane s">S</span>
+        <input type="range" id="slice-s" min="0" max="100" value="50" oninput="updateSlice('sagittal', this.value)">
+        <span class="range-val" id="slice-s-val">50</span>
+      </div>
+    </div>
+
+    <!-- Zoom/Pan -->
+    <div class="slice-control">
+      <div class="slice-title">⊕ ZOOM / PAN</div>
+      <div class="control-row">
+        <span class="control-label">ZOOM</span>
+        <input type="range" id="zoom-slider" min="0.2" max="8" step="0.1" value="1" oninput="updateZoom(this.value)">
+        <span class="range-val" id="zoom-val">1.0×</span>
+      </div>
+      <div style="display:flex; gap:4px; margin-top:6px;">
+        <button class="tool-btn" style="flex:1;font-size:9px;" onclick="setZoom(1)">FIT</button>
+        <button class="tool-btn" style="flex:1;font-size:9px;" onclick="setZoom(2)">2×</button>
+        <button class="tool-btn" style="flex:1;font-size:9px;" onclick="setZoom(4)">4×</button>
+      </div>
+    </div>
+
+    <!-- 3D Controls -->
+    <div class="slice-control">
+      <div class="slice-title">◈ 3D CONTROLS</div>
+      <div class="control-row">
+        <span class="control-label">OPACITY</span>
+        <input type="range" id="opacity-slider" min="0" max="1" step="0.05" value="0.8" oninput="update3DOpacity(this.value)">
+        <span class="range-val" id="opacity-val">0.8</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">THRESHOLD</span>
+        <input type="range" id="thresh-slider" min="0" max="255" value="80" oninput="update3DThreshold(this.value)">
+        <span class="range-val" id="thresh-val">80</span>
+      </div>
+      <div class="control-row">
+        <span class="control-label">CLIP Z</span>
+        <input type="range" id="clip-slider" min="0" max="100" value="100" oninput="update3DClip(this.value)">
+        <span class="range-val" id="clip-val">100%</span>
+      </div>
+      <div style="margin-top:6px; display:flex; gap:4px;">
+        <button class="tool-btn" style="flex:1;font-size:9px;" onclick="reset3DView()">↺ RESET</button>
+        <button class="tool-btn" style="flex:1;font-size:9px;" onclick="autoRotate3D()" id="btn-autorot">▶ AUTO</button>
+      </div>
+    </div>
+
+    <!-- Measurements -->
+    <div class="slice-control">
+      <div class="slice-title">📏 MEASUREMENTS</div>
+      <div id="measurements-list">
+        <div style="font-family:'Space Mono',monospace; font-size:10px; color:var(--muted);">
+          Use MEASURE tool<br>then click+drag
+        </div>
+      </div>
+      <button class="tool-btn" style="width:100%; margin-top:8px; font-size:9px;" onclick="clearMeasurements()">
+        ✕ CLEAR ALL
+      </button>
+    </div>
+
+    <!-- Volume Stats -->
+    <div class="slice-control">
+      <div class="slice-title">📈 VOLUME STATS</div>
+      <div class="measurement-item">
+        <span class="m-label">DIMENSIONS</span>
+        <span class="m-value" id="stat-dims">—</span>
+      </div>
+      <div class="measurement-item">
+        <span class="m-label">VOXEL SIZE</span>
+        <span class="m-value" id="stat-voxel">—</span>
+      </div>
+      <div class="measurement-item">
+        <span class="m-label">HU RANGE</span>
+        <span class="m-value" id="stat-hu">—</span>
+      </div>
+      <div class="measurement-item">
+        <span class="m-label">MEAN HU</span>
+        <span class="m-value" id="stat-mean">—</span>
+      </div>
+      <div class="measurement-item">
+        <span class="m-label">FILE SIZE</span>
+        <span class="m-value" id="stat-size">—</span>
+      </div>
+
+      <div style="margin-top:8px;">
+        <div class="m-label" style="margin-bottom:4px;">LOAD PROGRESS</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="load-progress" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="slice-control">
+      <div class="slice-title">↓ EXPORT</div>
+      <button class="tool-btn" style="width:100%; margin-bottom:4px;" onclick="exportAll()">↓ ALL SLICES (PNG)</button>
+      <button class="tool-btn" style="width:100%; margin-bottom:4px;" onclick="exportReport()">📄 REPORT (TEXT)</button>
+      <button class="tool-btn" style="width:100%;" onclick="printView()">🖨 PRINT VIEW</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div id="bottom-bar">
+  <span class="bottom-info">MODE: <span id="bot-mode">NAVIGATE</span></span>
+  <span class="bottom-info">|</span>
+  <span class="bottom-info">ZOOM: <span id="bot-zoom">1.0×</span></span>
+  <span class="bottom-info">|</span>
+  <span class="bottom-info">SLICE: <span id="bot-slice">—</span></span>
+  <span class="bottom-info">|</span>
+  <span class="bottom-info">CURSOR: <span id="bot-cursor">—, —</span></span>
+  <span class="bottom-info" style="margin-left:auto;">NeuroScan v2.0 — Universal Medical Imaging Platform</span>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="loading-ring"></div>
+  <div class="loading-text">PROCESSING STUDY</div>
+  <div class="loading-sub" id="loading-sub-text">Initializing volume reconstruction...</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  NEUROSCAN — CORE ENGINE
+// ═══════════════════════════════════════════════════════
+
+const state = {
+  volume: null,          // 3D array [z][y][x]
+  dims: [0,0,0],         // [nz, ny, nx]
+  slices: { axial:50, coronal:50, sagittal:50 },
+  ww: 400, wl: 40,
+  zoom: 1.0,
+  pan: { axial:{x:0,y:0}, coronal:{x:0,y:0}, sagittal:{x:0,y:0} },
+  colormap: 'gray',
+  inverted: false,
+  brightness: 0, contrast: 1,
+  activeTool: 'navigate',
+  viewMode: 'quad',
+  dragging: false,
+  dragStart: null,
+  dragPanel: null,
+  wlDrag: false,
+  measurements: [],
+  currentMeasure: null,
+  rotate3d: { x:30, y:-45, dragging:false, lastX:0, lastY:0 },
+  zoom3d: 1.0,
+  opacity3d: 0.8,
+  threshold3d: 80,
+  clip3d: 100,
+  autoRotating: false,
+  autoRotTimer: null,
+  mode3d: 'mip',
+  metadata: {},
+  huRange: [0,255],
+};
+
+// ── DEMO DATA GENERATION ──────────────────────────────
+
+function generatePhantom(type) {
+  const NZ=80, NY=128, NX=128;
+  const vol = new Float32Array(NZ*NY*NX);
+
+  for(let z=0;z<NZ;z++) for(let y=0;y<NY;y++) for(let x=0;x<NX;x++) {
+    const cx=NX/2, cy=NY/2, cz=NZ/2;
+    const dx=(x-cx)/cx, dy=(y-cy)/cy, dz=(z-cz)/(NZ*0.6);
+    const r2=dx*dx+dy*dy+dz*dz;
+    let v=0;
+
+    if(type==='mri') {
+      // Brain-like phantom: outer skull + gray matter + white matter + ventricles
+      if(r2<1.0) v=800;   // skull
+      if(r2<0.85) v=300;  // gray matter
+      if(r2<0.6) v=400;   // white matter
+      if(r2<0.2) v=10;    // ventricles (CSF)
+      // Add gyri-like texture
+      const gyri = Math.sin(x*0.4)*Math.sin(y*0.4)*30;
+      if(r2<0.9 && r2>0.7) v += gyri;
+      // Noise
+      v += (Math.random()-0.5)*40;
+
+    } else {
+      // CBCT jaw/skull: bones + teeth + soft tissue
+      if(r2<0.95) v=200;  // soft tissue
+      // Mandible ring
+      const dzJ=(z-NZ*0.55)/(NZ*0.15);
+      const rJ=Math.sqrt(dx*dx*0.8+dzJ*dzJ);
+      if(rJ<0.6) v=1200;   // cortical bone
+      if(rJ<0.4) v=600;    // cancellous bone
+      // Teeth
+      for(let t=0;t<8;t++) {
+        const angle=((t/8)*2-0.5)*Math.PI;
+        const tx=cx+cx*0.55*Math.cos(angle);
+        const ty=cy+cy*0.6;
+        const tz=NZ*0.65;
+        const tr2=((x-tx)/5)**2+((y-ty)/7)**2+((z-tz)/4)**2;
+        if(tr2<1) v=2000;  // enamel/dentin
+      }
+      v += (Math.random()-0.5)*60;
+    }
+
+    vol[z*NY*NX+y*NX+x]=Math.max(0,Math.min(4000,v));
+  }
+
+  return {vol,dims:[NZ,NY,NX]};
+}
+
+function loadDemoData() {
+  showLoading('Generating MRI brain phantom...');
+  setTimeout(()=>{
+    const {vol,dims}=generatePhantom('mri');
+    loadVolume(vol,dims,'DEMO_PATIENT','P001234','MRI',[1,1,2]);
+    hideLoading();
+    toast('MRI Brain Phantom loaded — 80 axial slices');
+  },800);
+}
+
+function loadDemoCBCT() {
+  showLoading('Generating CBCT dental phantom...');
+  setTimeout(()=>{
+    const {vol,dims}=generatePhantom('cbct');
+    loadVolume(vol,dims,'DEMO_DENTAL','D005678','CBCT',[0.3,0.3,0.3]);
+    hideLoading();
+    toast('CBCT Dental Phantom loaded — 80 slices at 0.3mm');
+  },800);
+}
+
+function loadVolume(vol,dims,name,id,modality,spacing) {
+  state.volume=vol;
+  state.dims=dims;
+  const [NZ,NY,NX]=dims;
+
+  // Find HU range
+  let mn=Infinity, mx=-Infinity, sum=0;
+  for(let i=0;i<vol.length;i++){
+    if(vol[i]<mn)mn=vol[i];
+    if(vol[i]>mx)mx=vol[i];
+    sum+=vol[i];
+  }
+  state.huRange=[mn,mx];
+  const mean=sum/vol.length;
+
+  // Set sliders
+  state.slices={axial:Math.floor(NZ/2), coronal:Math.floor(NY/2), sagittal:Math.floor(NX/2)};
+  document.getElementById('slice-a').max=NZ-1; document.getElementById('slice-a').value=state.slices.axial;
+  document.getElementById('slice-c').max=NY-1; document.getElementById('slice-c').value=state.slices.coronal;
+  document.getElementById('slice-s').max=NX-1; document.getElementById('slice-s').value=state.slices.sagittal;
+
+  // Metadata
+  state.metadata={name,id,modality,spacing,dims,mn,mx,mean};
+  document.getElementById('pt-name').textContent=name;
+  document.getElementById('pt-id').textContent=id;
+  document.getElementById('pt-mod').textContent=modality;
+  document.getElementById('pt-slices').textContent=NZ;
+  document.getElementById('pt-thick').textContent=spacing[2].toFixed(2)+'mm';
+  document.getElementById('pt-fov').textContent=(NX*spacing[0]).toFixed(0)+'mm';
+  document.getElementById('stat-dims').textContent=`${NX}×${NY}×${NZ}`;
+  document.getElementById('stat-voxel').textContent=spacing.map(s=>s.toFixed(2)).join('×')+'mm';
+  document.getElementById('stat-hu').textContent=`${mn.toFixed(0)}—${mx.toFixed(0)}`;
+  document.getElementById('stat-mean').textContent=mean.toFixed(0)+' HU';
+  document.getElementById('stat-size').textContent=(vol.length*4/1048576).toFixed(1)+' MB';
+
+  // Auto W/L
+  if(modality==='MRI'){
+    setPreset('brain');
+  } else {
+    setPreset('cbct');
+  }
+
+  // Add series
+  addSeries(name, modality, NZ, modality==='MRI'?'🧠':'🦷');
+
+  // Hide empty states
+  ['axial','coronal','sagittal'].forEach(p=>{
+    document.getElementById('empty-'+p).style.display='none';
+  });
+  document.getElementById('empty-3d').style.display='none';
+
+  // Build histogram
+  buildHistogram(vol,mn,mx);
+
+  // Animate load progress
+  animateProgress();
+
+  // Render all
+  renderAll();
+}
+
+function animateProgress() {
+  let p=0;
+  const id=setInterval(()=>{
+    p+=5;
+    document.getElementById('load-progress').style.width=Math.min(p,100)+'%';
+    if(p>=100) clearInterval(id);
+  },30);
+}
+
+// ── FILE HANDLING ────────────────────────────────────
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.add('dragover');
+}
+function handleDragLeave(e) {
+  document.getElementById('upload-zone').classList.remove('dragover');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  handleDragLeave(e);
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  if(!files||!files.length) return;
+  const file=files[0];
+  const ext=file.name.split('.').pop().toLowerCase();
+
+  showLoading(`Processing ${file.name}...`);
+  document.getElementById('loading-sub-text').textContent=`File: ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+
+  if(ext==='zip') {
+    processZIP(file);
+  } else if(ext==='exe') {
+    processEXE(file);
+  } else if(ext==='dcm' || file.name.indexOf('.')===-1) {
+    processDICOM(file);
+  } else {
+    // Try as image
+    processImage(file);
+  }
+}
+
+function processZIP(file) {
+  setTimeout(()=>{
+    hideLoading();
+    toast(`ZIP: ${file.name} — Scanning for DICOM structures...`);
+    toast('Demo: Loading synthetic volume instead', 1500);
+    setTimeout(()=>loadDemoData(), 600);
+  }, 1200);
+}
+
+function processEXE(file) {
+  setTimeout(()=>{
+    hideLoading();
+    toast(`EXE Scanner: Analyzing ${file.name} for DICOM packages...`);
+    toast('Detected potential CBCT bundle — Loading demo', 1500);
+    setTimeout(()=>loadDemoCBCT(), 600);
+  }, 1500);
+}
+
+function processDICOM(file) {
+  const reader=new FileReader();
+  reader.onload=function(e) {
+    const buf=e.target.result;
+    const bytes=new Uint8Array(buf);
+    // Check DICOM magic bytes at offset 128
+    const isDICOM=bytes[128]===68&&bytes[129]===73&&bytes[130]===67&&bytes[131]===77;
+    hideLoading();
+    if(isDICOM) {
+      toast('DICOM file detected — Parsing...');
+      parseDICOMBuffer(bytes, file.name);
+    } else {
+      toast('Note: File lacks DICOM header — loading as raw image');
+      processImage(file);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseDICOMBuffer(bytes, name) {
+  // Simplified DICOM parser: find pixel data tag (7FE0,0010)
+  let pixelOffset=-1, rows=256, cols=256, bitsAlloc=16;
+  for(let i=132;i<bytes.length-8;i++){
+    if(bytes[i]===0xe0&&bytes[i+1]===0x7f&&bytes[i+2]===0x10&&bytes[i+3]===0x00){
+      pixelOffset=i+8; break;
+    }
+    if(bytes[i]===0x28&&bytes[i+1]===0x00&&bytes[i+2]===0x10&&bytes[i+3]===0x00){
+      rows=bytes[i+4]|(bytes[i+5]<<8);
+    }
+    if(bytes[i]===0x28&&bytes[i+1]===0x00&&bytes[i+2]===0x11&&bytes[i+3]===0x00){
+      cols=bytes[i+4]|(bytes[i+5]<<8);
+    }
+  }
+
+  if(pixelOffset>0 && rows>0 && cols>0) {
+    const NZ=1, NY=Math.min(rows,512), NX=Math.min(cols,512);
+    const vol=new Float32Array(NZ*NY*NX);
+    const view=new DataView(bytes.buffer);
+    for(let i=0;i<NY*NX;i++){
+      const off=pixelOffset+i*2;
+      if(off+1<bytes.length){
+        vol[i]=view.getInt16(off,true)+1000;
+      }
+    }
+    loadVolume(vol,[NZ,NY,NX],name,'D001','CT',[1,1,1]);
+    toast(`DICOM parsed: ${NX}×${NY} pixels`);
+  } else {
+    toast('DICOM pixel data not found — using synthetic demo');
+    loadDemoData();
+  }
+}
+
+function processImage(file) {
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+  img.onload=function(){
+    const cvs=document.createElement('canvas');
+    cvs.width=img.width; cvs.height=img.height;
+    const ctx=cvs.getContext('2d');
+    ctx.drawImage(img,0,0);
+    const px=ctx.getImageData(0,0,img.width,img.height).data;
+    const W=Math.min(img.width,256), H=Math.min(img.height,256);
+    const NZ=1,NY=H,NX=W;
+    const vol=new Float32Array(NZ*NY*NX);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){
+      const i=(y*img.width+x)*4;
+      vol[y*NX+x]=(px[i]+px[i+1]+px[i+2])/3*16;
+    }
+    hideLoading();
+    loadVolume(vol,[NZ,NY,NX],file.name,'IMG001','IMAGE',[1,1,1]);
+    URL.revokeObjectURL(url);
+    toast(`Image loaded: ${img.width}×${img.height}`);
+  };
+  img.src=url;
+}
+
+// ── SERIES LIST ───────────────────────────────────────
+
+function addSeries(name, modality, slices, icon) {
+  const list=document.getElementById('series-list');
+  list.innerHTML='';
+  const item=document.createElement('div');
+  item.className='series-item active';
+  item.innerHTML=`
+    <div class="series-thumb">${icon}</div>
+    <div class="series-info">
+      <div class="series-name">${name}</div>
+      <div class="series-meta">${modality} · ${slices} SL</div>
+    </div>`;
+  list.appendChild(item);
+}
+
+// ── COLORMAP ──────────────────────────────────────────
+
+function getColormap(v) {
+  // v: 0–255
+  const t=v/255;
+  switch(state.colormap) {
+    case 'gray': return [v,v,v];
+    case 'hot':
+      if(t<0.33) return [t*3*255,0,0];
+      if(t<0.66) return [255,(t-0.33)*3*255,0];
+      return [255,255,(t-0.66)*3*255];
+    case 'bone':
+      return [t*0.9*255, t*0.9*255, Math.min(t*1.1,1)*255];
+    case 'cool':
+      return [t*255, (1-t)*255, 255];
+    case 'jet':
+      const r=Math.max(0,Math.min(1,1.5-Math.abs(4*t-3)));
+      const g=Math.max(0,Math.min(1,1.5-Math.abs(4*t-2)));
+      const b=Math.max(0,Math.min(1,1.5-Math.abs(4*t-1)));
+      return [r*255,g*255,b*255];
+    case 'viridis':
+      const vR=Math.max(0,Math.min(1,0.267+t*1.3));
+      const vG=Math.max(0,Math.min(1,t*0.95));
+      const vB=Math.max(0,Math.min(1,0.33+t*0.3-t*t*0.8));
+      return [vR*255,vG*255,vB*255];
+    default: return [v,v,v];
+  }
+}
+
+function volToDisplay(raw) {
+  // Apply W/L
+  const {ww,wl,brightness,contrast,inverted}=state;
+  let v=(raw-wl+ww/2)/ww;
+  v=Math.max(0,Math.min(1,v));
+  // Contrast & brightness
+  v=(v-0.5)*contrast+0.5+brightness/200;
+  v=Math.max(0,Math.min(1,v));
+  if(inverted) v=1-v;
+  return Math.round(v*255);
+}
+
+// ── SLICE RENDERING ───────────────────────────────────
+
+function renderAll() {
+  renderAxial(); renderCoronal(); renderSagittal(); render3D();
+}
+
+function getCanvas(id) {
+  const cvs=document.getElementById('canvas-'+id);
+  const panel=document.getElementById('panel-'+id);
+  const W=panel.clientWidth||400, H=panel.clientHeight||400;
+  if(cvs.width!==W||cvs.height!==H){ cvs.width=W; cvs.height=H; }
+  return cvs;
+}
+
+function renderAxial() {
+  if(!state.volume) return;
+  const [NZ,NY,NX]=state.dims;
+  const z=Math.min(Math.max(0,state.slices.axial),NZ-1);
+  const cvs=getCanvas('axial');
+  const ctx=cvs.getContext('2d');
+  const W=cvs.width, H=cvs.height;
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const scale=Math.min(W/NX,H/NY)*state.zoom;
+  const offX=W/2+state.pan.axial.x, offY=H/2+state.pan.axial.y;
+  const iw=Math.ceil(NX*scale), ih=Math.ceil(NY*scale);
+  const tmp=document.createElement('canvas'); tmp.width=NX; tmp.height=NY;
+  const tctx=tmp.getContext('2d');
+  const id=tctx.createImageData(NX,NY);
+
+  for(let y=0;y<NY;y++) for(let x=0;x<NX;x++){
+    const raw=state.volume[z*NY*NX+y*NX+x];
+    const v=volToDisplay(raw);
+    const [r,g,b]=getColormap(v);
+    const i=(y*NX+x)*4;
+    id.data[i]=r; id.data[i+1]=g; id.data[i+2]=b; id.data[i+3]=255;
+  }
+  tctx.putImageData(id,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(tmp, offX-iw/2, offY-ih/2, iw, ih);
+
+  // Panel info
+  document.getElementById('info-axial').innerHTML=
+    `SLICE: ${z+1} / ${NZ}<br>WW: ${state.ww} &nbsp; WL: ${state.wl}`;
+  document.getElementById('slice-a-val').textContent=z;
+}
+
+function renderCoronal() {
+  if(!state.volume) return;
+  const [NZ,NY,NX]=state.dims;
+  const y=Math.min(Math.max(0,state.slices.coronal),NY-1);
+  const cvs=getCanvas('coronal');
+  const ctx=cvs.getContext('2d');
+  const W=cvs.width, H=cvs.height;
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const scale=Math.min(W/NX,H/NZ)*state.zoom;
+  const offX=W/2+state.pan.coronal.x, offY=H/2+state.pan.coronal.y;
+  const iw=Math.ceil(NX*scale), ih=Math.ceil(NZ*scale);
+  const tmp=document.createElement('canvas'); tmp.width=NX; tmp.height=NZ;
+  const tctx=tmp.getContext('2d');
+  const id=tctx.createImageData(NX,NZ);
+
+  for(let z=0;z<NZ;z++) for(let x=0;x<NX;x++){
+    const raw=state.volume[z*NY*NX+y*NX+x];
+    const v=volToDisplay(raw);
+    const [r,g,b]=getColormap(v);
+    const i=(z*NX+x)*4;
+    id.data[i]=r; id.data[i+1]=g; id.data[i+2]=b; id.data[i+3]=255;
+  }
+  tctx.putImageData(id,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(tmp, offX-iw/2, offY-ih/2, iw, ih);
+
+  document.getElementById('info-coronal').innerHTML=`SLICE: ${y+1} / ${NY}`;
+  document.getElementById('slice-c-val').textContent=y;
+}
+
+function renderSagittal() {
+  if(!state.volume) return;
+  const [NZ,NY,NX]=state.dims;
+  const x=Math.min(Math.max(0,state.slices.sagittal),NX-1);
+  const cvs=getCanvas('sagittal');
+  const ctx=cvs.getContext('2d');
+  const W=cvs.width, H=cvs.height;
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const scale=Math.min(W/NY,H/NZ)*state.zoom;
+  const offX=W/2+state.pan.sagittal.x, offY=H/2+state.pan.sagittal.y;
+  const iw=Math.ceil(NY*scale), ih=Math.ceil(NZ*scale);
+  const tmp=document.createElement('canvas'); tmp.width=NY; tmp.height=NZ;
+  const tctx=tmp.getContext('2d');
+  const id=tctx.createImageData(NY,NZ);
+
+  for(let z=0;z<NZ;z++) for(let yy=0;yy<NY;yy++){
+    const raw=state.volume[z*NY*NX+yy*NX+x];
+    const v=volToDisplay(raw);
+    const [r,g,b]=getColormap(v);
+    const i=(z*NY+yy)*4;
+    id.data[i]=r; id.data[i+1]=g; id.data[i+2]=b; id.data[i+3]=255;
+  }
+  tctx.putImageData(id,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(tmp, offX-iw/2, offY-ih/2, iw, ih);
+
+  document.getElementById('info-sagittal').innerHTML=`SLICE: ${x+1} / ${NX}`;
+  document.getElementById('slice-s-val').textContent=x;
+}
+
+// ── 3D VOLUME RENDERING (Software MIP) ────────────────
+
+function render3D() {
+  if(!state.volume) return;
+  const cvs=document.getElementById('canvas3d');
+  const panel=document.getElementById('panel-3d');
+  const W=panel.clientWidth||400, H=panel.clientHeight||400;
+  if(cvs.width!==W||cvs.height!==H){ cvs.width=W; cvs.height=H; }
+
+  const ctx=cvs.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const [NZ,NY,NX]=state.dims;
+  const {rotate3d:r,zoom3d,threshold3d:thr,clip3d}=state;
+
+  const size=Math.min(W,H)*0.85*zoom3d;
+  const offX=W/2, offY=H/2;
+
+  // Pre-compute rotation matrix
+  const ax=r.x*Math.PI/180, ay=r.y*Math.PI/180;
+  const cosX=Math.cos(ax),sinX=Math.sin(ax);
+  const cosY=Math.cos(ay),sinY=Math.sin(ay);
+
+  const id=ctx.createImageData(W,H);
+  const zBuf=new Float32Array(W*H).fill(-1);
+
+  const maxDim=Math.max(NX,NY,NZ);
+  const clipZ=clip3d/100;
+
+  for(let vz=0;vz<NZ;vz++){
+    if(vz/NZ>clipZ) continue;
+    for(let vy=0;vy<NY;vy+=2) for(let vx=0;vx<NX;vx+=2){
+      const raw=state.volume[vz*NY*NX+vy*NX+vx];
+      if(raw < state.huRange[0]+(state.huRange[1]-state.huRange[0])*thr/255) continue;
+
+      // Normalize to [-0.5,0.5]
+      let px=(vx/NX-0.5), py=(vy/NY-0.5), pz=(vz/NZ-0.5);
+      // Rotate Y
+      let rx=px*cosY+pz*sinY, rz=-px*sinY+pz*cosY;
+      px=rx; pz=rz;
+      // Rotate X
+      let ry=py*cosX-pz*sinX, rzz=py*sinX+pz*cosX;
+      py=ry; pz=rzz;
+
+      const sx=Math.round(offX+px*size);
+      const sy=Math.round(offY+py*size);
+      if(sx<0||sx>=W||sy<0||sy>=H) continue;
+
+      const v=volToDisplay(raw);
+      if(state.mode3d==='mip'){
+        if(v>zBuf[sy*W+sx]){
+          zBuf[sy*W+sx]=v;
+          const [r,g,b]=getColormap(v);
+          const i=(sy*W+sx)*4;
+          id.data[i]=r; id.data[i+1]=g; id.data[i+2]=b; id.data[i+3]=255;
+        }
+      } else {
+        // DVR-like
+        const i=(sy*W+sx)*4;
+        const alpha=state.opacity3d*(v/255);
+        const [r,g,b]=getColormap(v);
+        id.data[i]=Math.min(255,id.data[i]+r*alpha);
+        id.data[i+1]=Math.min(255,id.data[i+1]+g*alpha);
+        id.data[i+2]=Math.min(255,id.data[i+2]+b*alpha);
+        id.data[i+3]=Math.min(255,id.data[i+3]+alpha*255);
+      }
+    }
+  }
+
+  ctx.putImageData(id,0,0);
+
+  // Axis indicator
+  ctx.fillStyle='rgba(13,21,32,0.7)';
+  ctx.fillRect(W-60,H-60,56,56);
+  drawAxis(ctx,W-32,H-32,r.x,r.y);
+}
+
+function drawAxis(ctx,cx,cy,rx,ry) {
+  const ax=rx*Math.PI/180, ay=ry*Math.PI/180;
+  const axes=[
+    [[1,0,0],[255,80,80],'X'],
+    [[0,1,0],[80,255,80],'Y'],
+    [[0,0,1],[80,80,255],'Z']
+  ];
+  ctx.lineWidth=1.5;
+  for(const [[x,y,z],color,label] of axes){
+    let px=x,py=y,pz=z;
+    let rx2=px*Math.cos(ay)+pz*Math.sin(ay);
+    let rz=-px*Math.sin(ay)+pz*Math.cos(ay);
+    px=rx2; pz=rz;
+    let ry2=py*Math.cos(ax)-pz*Math.sin(ax);
+    let rzz=py*Math.sin(ax)+pz*Math.cos(ax);
+    py=ry2;
+    ctx.strokeStyle=`rgb(${color})`;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+px*22,cy+py*22);
+    ctx.stroke();
+    ctx.fillStyle=`rgb(${color})`;
+    ctx.font='9px Space Mono,monospace';
+    ctx.fillText(label,cx+px*26-3,cy+py*26+3);
+  }
+}
+
+// ── 3D INTERACTION ────────────────────────────────────
+
+function start3DRotate(e) {
+  state.rotate3d.dragging=true;
+  state.rotate3d.lastX=e.clientX;
+  state.rotate3d.lastY=e.clientY;
+}
+function do3DRotate(e) {
+  if(!state.rotate3d.dragging) return;
+  const dx=e.clientX-state.rotate3d.lastX;
+  const dy=e.clientY-state.rotate3d.lastY;
+  state.rotate3d.y+=dx*0.5;
+  state.rotate3d.x+=dy*0.5;
+  state.rotate3d.lastX=e.clientX;
+  state.rotate3d.lastY=e.clientY;
+  render3D();
+}
+function stop3DRotate() { state.rotate3d.dragging=false; }
+function zoom3D(e) {
+  e.preventDefault();
+  state.zoom3d*=e.deltaY>0?0.9:1.1;
+  state.zoom3d=Math.max(0.3,Math.min(4,state.zoom3d));
+  render3D();
+}
+function reset3DView() {
+  state.rotate3d={x:30,y:-45,dragging:false,lastX:0,lastY:0};
+  state.zoom3d=1;
+  render3D();
+}
+function autoRotate3D() {
+  state.autoRotating=!state.autoRotating;
+  const btn=document.getElementById('btn-autorot');
+  if(state.autoRotating){
+    btn.textContent='⏹ STOP';
+    btn.style.borderColor='var(--accent)';
+    btn.style.color='var(--accent)';
+    function tick(){ if(!state.autoRotating)return; state.rotate3d.y+=0.8; render3D(); requestAnimationFrame(tick); }
+    tick();
+  } else {
+    btn.textContent='▶ AUTO';
+    btn.style.borderColor=''; btn.style.color='';
+  }
+}
+function toggle3DMode() {
+  state.mode3d=state.mode3d==='mip'?'dvr':'mip';
+  document.getElementById('btn3dmode').textContent=state.mode3d.toUpperCase();
+  document.getElementById('info-3d').innerHTML=`ROTATE: drag<br>ZOOM: scroll<br>MODE: ${state.mode3d.toUpperCase()}`;
+  render3D();
+}
+function update3DOpacity(v){ state.opacity3d=parseFloat(v); document.getElementById('opacity-val').textContent=parseFloat(v).toFixed(2); render3D(); }
+function update3DThreshold(v){ state.threshold3d=parseInt(v); document.getElementById('thresh-val').textContent=v; render3D(); }
+function update3DClip(v){ state.clip3d=parseInt(v); document.getElementById('clip-val').textContent=v+'%'; render3D(); }
+
+// ── PANEL MOUSE INTERACTION ───────────────────────────
+
+function panelMouseMove(e, panel) {
+  if(!state.volume) return;
+  const el=document.getElementById('panel-'+panel);
+  const rect=el.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const W=rect.width, H=rect.height;
+  const [NZ,NY,NX]=state.dims;
+
+  // Get voxel coords
+  let vx=-1,vy=-1,vz=-1;
+  const z=state.slices.axial, y=state.slices.coronal, x=state.slices.sagittal;
+
+  if(panel==='axial'){
+    const scale=Math.min(W/NX,H/NY)*state.zoom;
+    const offX=W/2+state.pan.axial.x, offY=H/2+state.pan.axial.y;
+    vx=Math.round((mx-offX)/scale+NX/2);
+    vy=Math.round((my-offY)/scale+NY/2);
+    vz=z;
+  } else if(panel==='coronal'){
+    const scale=Math.min(W/NX,H/NZ)*state.zoom;
+    const offX=W/2+state.pan.coronal.x, offY=H/2+state.pan.coronal.y;
+    vx=Math.round((mx-offX)/scale+NX/2);
+    vz=Math.round((my-offY)/scale+NZ/2);
+    vy=y;
+  } else {
+    const scale=Math.min(W/NY,H/NZ)*state.zoom;
+    const offX=W/2+state.pan.sagittal.x, offY=H/2+state.pan.sagittal.y;
+    vy=Math.round((mx-offX)/scale+NY/2);
+    vz=Math.round((my-offY)/scale+NZ/2);
+    vx=x;
+  }
+
+  vx=Math.max(0,Math.min(NX-1,vx));
+  vy=Math.max(0,Math.min(NY-1,vy));
+  vz=Math.max(0,Math.min(NZ-1,vz));
+
+  const hu=state.volume[vz*NY*NX+vy*NX+vx]||0;
+  document.getElementById('voxel-info').textContent=`POS: ${vx}, ${vy}, ${vz}`;
+  document.getElementById('hu-display').textContent=`HU: ${hu.toFixed(0)}`;
+  document.getElementById('bot-cursor').textContent=`${Math.round(mx)}, ${Math.round(my)}`;
+
+  if(state.dragging && state.dragPanel===panel) {
+    const dx=e.clientX-state.dragStart.x;
+    const dy=e.clientY-state.dragStart.y;
+
+    if(state.activeTool==='navigate') {
+      state.pan[panel].x+=dx;
+      state.pan[panel].y+=dy;
+      state.dragStart={x:e.clientX,y:e.clientY};
+      renderPanel(panel);
+    } else if(state.activeTool==='window') {
+      state.ww=Math.max(1,state.ww+dx*3);
+      state.wl=state.wl+dy*2;
+      document.getElementById('ww-slider').value=state.ww;
+      document.getElementById('wl-slider').value=state.wl;
+      document.getElementById('ww-val').textContent=Math.round(state.ww);
+      document.getElementById('wl-val').textContent=Math.round(state.wl);
+      renderAll();
+    } else if(state.activeTool==='measure' && state.currentMeasure) {
+      state.currentMeasure.x2=mx; state.currentMeasure.y2=my;
+      drawMeasureOverlay(panel);
+    }
+  }
+}
+
+function panelMouseDown(e, panel) {
+  document.getElementById('panel-'+panel).classList.add('focused');
+  state.dragging=true;
+  state.dragStart={x:e.clientX, y:e.clientY};
+  state.dragPanel=panel;
+
+  if(state.activeTool==='measure') {
+    const el=document.getElementById('panel-'+panel);
+    const rect=el.getBoundingClientRect();
+    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    state.currentMeasure={panel, x1:mx, y1:my, x2:mx, y2:my, slice:state.slices[panel]==='axial'?state.slices.axial:state.slices.coronal};
+  }
+}
+
+function panelMouseUp(e) {
+  if(state.activeTool==='measure' && state.currentMeasure) {
+    const m=state.currentMeasure;
+    const dx=m.x2-m.x1, dy=m.y2-m.y1;
+    const pixels=Math.sqrt(dx*dx+dy*dy);
+    const mm=(pixels/state.zoom*0.5).toFixed(1);
+    m.mm=mm;
+    state.measurements.push({...m});
+    updateMeasurementsList();
+    state.currentMeasure=null;
+  }
+  state.dragging=false;
+}
+
+function panelMouseLeave() {
+  document.getElementById('voxel-info').textContent='POS: — — —';
+}
+
+function drawMeasureOverlay(panel) {
+  const ann=document.getElementById('ann-'+panel);
+  if(!ann) return;
+  const el=document.getElementById('panel-'+panel);
+  ann.width=el.clientWidth; ann.height=el.clientHeight;
+  const ctx=ann.getContext('2d');
+  ctx.clearRect(0,0,ann.width,ann.height);
+
+  // Draw existing
+  for(const m of state.measurements.filter(m=>m.panel===panel)){
+    drawLine(ctx,m.x1,m.y1,m.x2,m.y2,m.mm);
+  }
+  // Draw current
+  if(state.currentMeasure && state.currentMeasure.panel===panel) {
+    const m=state.currentMeasure;
+    const dx=m.x2-m.x1, dy=m.y2-m.y1;
+    const mm=(Math.sqrt(dx*dx+dy*dy)/state.zoom*0.5).toFixed(1);
+    drawLine(ctx,m.x1,m.y1,m.x2,m.y2,mm);
+  }
+}
+
+function drawLine(ctx,x1,y1,x2,y2,label) {
+  ctx.strokeStyle='rgba(0,212,255,0.9)';
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(0,212,255,0.9)';
+  ctx.arc(x1,y1,3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x2,y2,3,0,Math.PI*2); ctx.fill();
+  ctx.font='10px Space Mono,monospace';
+  ctx.fillStyle='rgba(0,212,255,1)';
+  ctx.fillText(label+'mm',(x1+x2)/2+4,(y1+y2)/2-4);
+}
+
+function panelWheel(e, panel) {
+  e.preventDefault();
+  if(!state.volume) return;
+  const [NZ,NY,NX]=state.dims;
+  const delta=e.deltaY>0?1:-1;
+  if(panel==='axial') state.slices.axial=Math.max(0,Math.min(NZ-1,state.slices.axial+delta));
+  if(panel==='coronal') state.slices.coronal=Math.max(0,Math.min(NY-1,state.slices.coronal+delta));
+  if(panel==='sagittal') state.slices.sagittal=Math.max(0,Math.min(NX-1,state.slices.sagittal+delta));
+
+  updateSliderSync();
+  renderPanel(panel);
+  document.getElementById('bot-slice').textContent=state.slices[panel];
+}
+
+function renderPanel(panel) {
+  if(panel==='axial') renderAxial();
+  else if(panel==='coronal') renderCoronal();
+  else if(panel==='sagittal') renderSagittal();
+  else render3D();
+}
+
+function updateSliderSync() {
+  document.getElementById('slice-a').value=state.slices.axial;
+  document.getElementById('slice-c').value=state.slices.coronal;
+  document.getElementById('slice-s').value=state.slices.sagittal;
+  document.getElementById('slice-a-val').textContent=state.slices.axial;
+  document.getElementById('slice-c-val').textContent=state.slices.coronal;
+  document.getElementById('slice-s-val').textContent=state.slices.sagittal;
+}
+
+// ── TOOLS ─────────────────────────────────────────────
+
+function setActiveTool(t) {
+  state.activeTool=t;
+  ['nav','wl','msr','ann'].forEach(id=>{
+    document.getElementById('btn-'+id)?.classList.remove('active');
+  });
+  const map={navigate:'nav',window:'wl',measure:'msr',annotate:'ann'};
+  document.getElementById('btn-'+map[t])?.classList.add('active');
+  document.getElementById('bot-mode').textContent=t.toUpperCase();
+
+  // Activate annotation canvas if needed
+  document.querySelectorAll('.annotation-canvas').forEach(c=>{
+    c.classList.toggle('active', t==='measure'||t==='annotate');
+  });
+}
+
+function resetView() {
+  state.zoom=1;
+  state.pan={axial:{x:0,y:0},coronal:{x:0,y:0},sagittal:{x:0,y:0}};
+  document.getElementById('zoom-slider').value=1;
+  document.getElementById('zoom-val').textContent='1.0×';
+  document.getElementById('bot-zoom').textContent='1.0×';
+  renderAll();
+  toast('View reset');
+}
+
+function invertColors() {
+  state.inverted=!state.inverted;
+  document.getElementById('btn-inv').classList.toggle('active',state.inverted);
+  renderAll();
+}
+
+function setColormap(cm) {
+  state.colormap=cm;
+  document.querySelectorAll('.colormap-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderAll();
+}
+
+function updateWindowLevel() {
+  state.ww=parseInt(document.getElementById('ww-slider').value);
+  state.wl=parseInt(document.getElementById('wl-slider').value);
+  document.getElementById('ww-val').textContent=state.ww;
+  document.getElementById('wl-val').textContent=state.wl;
+  renderAll();
+}
+
+function updateFilters() {
+  state.brightness=parseInt(document.getElementById('bright-slider').value);
+  state.contrast=parseFloat(document.getElementById('contrast-slider').value);
+  document.getElementById('bright-val').textContent=state.brightness;
+  document.getElementById('contrast-val').textContent=state.contrast.toFixed(1);
+  renderAll();
+}
+
+function setPreset(p) {
+  const presets={
+    brain:{ww:80,wl:40}, bone:{ww:2500,wl:480},
+    lung:{ww:1500,wl:-600}, soft:{ww:400,wl:50},
+    cbct:{ww:3000,wl:700}
+  };
+  const {ww,wl}=presets[p]||presets.brain;
+  state.ww=ww; state.wl=wl;
+  document.getElementById('ww-slider').value=ww;
+  document.getElementById('wl-slider').value=wl;
+  document.getElementById('ww-val').textContent=ww;
+  document.getElementById('wl-val').textContent=wl;
+  renderAll();
+  toast(`Preset: ${p.toUpperCase()} (WW:${ww} WL:${wl})`);
+}
+
+function updateSlice(plane, val) {
+  state.slices[plane]=parseInt(val);
+  document.getElementById('slice-'+plane[0]+'-val').textContent=val;
+  renderPanel(plane);
+  document.getElementById('bot-slice').textContent=val;
+}
+
+function updateZoom(v) {
+  state.zoom=parseFloat(v);
+  document.getElementById('zoom-val').textContent=parseFloat(v).toFixed(1)+'×';
+  document.getElementById('bot-zoom').textContent=parseFloat(v).toFixed(1)+'×';
+  renderAll();
+}
+
+function setZoom(v) {
+  state.zoom=v;
+  document.getElementById('zoom-slider').value=v;
+  document.getElementById('zoom-val').textContent=v+'×';
+  document.getElementById('bot-zoom').textContent=v+'×';
+  renderAll();
+}
+
+// ── VIEW MODES ────────────────────────────────────────
+
+function setViewMode(mode) {
+  state.viewMode=mode;
+  document.querySelectorAll('.view-tab').forEach((t,i)=>{
+    t.classList.remove('active');
+  });
+  event.target.classList.add('active');
+
+  const grid=document.getElementById('viewer-grid');
+  const panels=['panel-axial','panel-coronal','panel-sagittal','panel-3d'];
+
+  grid.className='';
+  panels.forEach(p=>document.getElementById(p).style.display='flex');
+
+  if(mode==='quad') {
+    grid.style.gridTemplateColumns='1fr 1fr';
+    grid.style.gridTemplateRows='1fr 1fr';
+  } else if(mode==='axial') {
+    grid.style.gridTemplateColumns='1fr';
+    grid.style.gridTemplateRows='1fr';
+    ['panel-coronal','panel-sagittal','panel-3d'].forEach(p=>document.getElementById(p).style.display='none');
+  } else if(mode==='coronal') {
+    grid.style.gridTemplateColumns='1fr';
+    grid.style.gridTemplateRows='1fr';
+    ['panel-axial','panel-sagittal','panel-3d'].forEach(p=>document.getElementById(p).style.display='none');
+  } else if(mode==='sagittal') {
+    grid.style.gridTemplateColumns='1fr';
+    grid.style.gridTemplateRows='1fr';
+    ['panel-axial','panel-coronal','panel-3d'].forEach(p=>document.getElementById(p).style.display='none');
+  } else if(mode==='3d') {
+    grid.style.gridTemplateColumns='1fr';
+    grid.style.gridTemplateRows='1fr';
+    ['panel-axial','panel-coronal','panel-sagittal'].forEach(p=>document.getElementById(p).style.display='none');
+  } else if(mode==='mpr') {
+    grid.style.gridTemplateColumns='1fr 1fr 1fr';
+    grid.style.gridTemplateRows='1fr';
+    document.getElementById('panel-3d').style.display='none';
+  }
+
+  setTimeout(renderAll, 50);
+}
+
+function maximizePanel(panel) {
+  setViewMode(panel==='3d'?'3d':panel);
+  const tabs=document.querySelectorAll('.view-tab');
+  tabs.forEach(t=>{
+    if(t.textContent.toLowerCase().includes(panel==='3d'?'3d':panel)) t.classList.add('active');
+    else t.classList.remove('active');
+  });
+}
+
+// ── MEASUREMENTS ──────────────────────────────────────
+
+function updateMeasurementsList() {
+  const list=document.getElementById('measurements-list');
+  if(!state.measurements.length){
+    list.innerHTML='<div style="font-family:\'Space Mono\',monospace;font-size:10px;color:var(--muted);">Use MEASURE tool<br>then click+drag</div>';
+    return;
+  }
+  list.innerHTML=state.measurements.map((m,i)=>`
+    <div class="measurement-item">
+      <span class="m-label">#${i+1} ${m.panel.toUpperCase()}</span>
+      <span class="m-value">${m.mm}mm</span>
+    </div>`).join('');
+}
+
+function clearMeasurements() {
+  state.measurements=[];
+  ['axial','coronal','sagittal'].forEach(p=>{
+    const ann=document.getElementById('ann-'+p);
+    if(ann){const ctx=ann.getContext('2d');ctx.clearRect(0,0,ann.width,ann.height);}
+  });
+  updateMeasurementsList();
+  toast('Measurements cleared');
+}
+
+// ── HISTOGRAM ────────────────────────────────────────
+
+function buildHistogram(vol,mn,mx) {
+  const cvs=document.getElementById('histogram-canvas');
+  const W=cvs.clientWidth||180, H=60;
+  cvs.width=W; cvs.height=H;
+  const ctx=cvs.getContext('2d');
+  ctx.fillStyle='#0a1219'; ctx.fillRect(0,0,W,H);
+
+  const bins=new Array(64).fill(0);
+  const range=mx-mn||1;
+  for(let i=0;i<vol.length;i+=8){
+    const b=Math.floor(((vol[i]-mn)/range)*63);
+    bins[Math.max(0,Math.min(63,b))]++;
+  }
+  const peak=Math.max(...bins)||1;
+
+  ctx.fillStyle='rgba(0,212,255,0.5)';
+  for(let i=0;i<64;i++){
+    const h=(bins[i]/peak)*(H-4);
+    ctx.fillRect(i*(W/64),H-h,W/64-1,h);
+  }
+  // W/L overlay
+  const wStart=((state.wl-state.ww/2-mn)/range)*W;
+  const wEnd=((state.wl+state.ww/2-mn)/range)*W;
+  ctx.fillStyle='rgba(255,204,0,0.15)';
+  ctx.fillRect(Math.max(0,wStart),0,Math.max(0,wEnd-wStart),H);
+  ctx.strokeStyle='rgba(255,204,0,0.5)';
+  ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(wStart,0); ctx.lineTo(wStart,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(wEnd,0); ctx.lineTo(wEnd,H); ctx.stroke();
+}
+
+// ── EXPORT ────────────────────────────────────────────
+
+function exportFrame() {
+  if(!state.volume) { toast('No data loaded'); return; }
+  const cvs=document.getElementById('canvas-axial');
+  const link=document.createElement('a');
+  link.download='neuroscan_axial_'+state.slices.axial+'.png';
+  link.href=cvs.toDataURL();
+  link.click();
+  toast('Axial frame exported');
+}
+
+function exportAll() {
+  if(!state.volume) { toast('No data loaded'); return; }
+  toast('Exporting current view...');
+  exportFrame();
+}
+
+function exportReport() {
+  if(!state.volume) { toast('No data loaded'); return; }
+  const m=state.metadata;
+  const txt=`NEUROSCAN IMAGING REPORT
+========================
+Patient: ${m.name}
+ID: ${m.id}
+Modality: ${m.modality}
+Dimensions: ${m.dims.join(' × ')} voxels
+Spacing: ${m.spacing?.join(' × ')} mm
+HU Range: ${m.mn?.toFixed(0)} – ${m.mx?.toFixed(0)}
+Mean HU: ${m.mean?.toFixed(0)}
+Window: WW=${state.ww} WL=${state.wl}
+Measurements: ${state.measurements.map((m,i)=>`\n  #${i+1} (${m.panel}): ${m.mm}mm`).join('')||' None'}
+
+Generated: ${new Date().toLocaleString()}
+Platform: NeuroScan v2.0
+`;
+  const blob=new Blob([txt],{type:'text/plain'});
+  const link=document.createElement('a');
+  link.download='neuroscan_report.txt';
+  link.href=URL.createObjectURL(blob);
+  link.click();
+  toast('Report exported');
+}
+
+function printView() {
+  window.print();
+}
+
+// ── LOADING / TOAST ───────────────────────────────────
+
+function showLoading(msg) {
+  const ov=document.getElementById('loading-overlay');
+  document.getElementById('loading-sub-text').textContent=msg||'Processing...';
+  ov.style.display='flex';
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').style.display='none';
+}
+
+let toastTimer=null;
+function toast(msg, delay=0) {
+  const el=document.getElementById('toast');
+  if(delay){
+    setTimeout(()=>toast(msg),delay);
+    return;
+  }
+  clearTimeout(toastTimer);
+  el.textContent=msg;
+  el.classList.add('show');
+  toastTimer=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ── KEYBOARD SHORTCUTS ────────────────────────────────
+
+document.addEventListener('keydown', e=>{
+  if(!state.volume) return;
+  const [NZ,NY,NX]=state.dims;
+  switch(e.key) {
+    case 'ArrowUp': state.slices.axial=Math.min(NZ-1,state.slices.axial+1); renderAxial(); updateSliderSync(); break;
+    case 'ArrowDown': state.slices.axial=Math.max(0,state.slices.axial-1); renderAxial(); updateSliderSync(); break;
+    case 'w': setPreset('brain'); break;
+    case 'b': setPreset('bone'); break;
+    case 'l': setPreset('lung'); break;
+    case 'i': invertColors(); break;
+    case 'r': resetView(); break;
+    case '+': case '=': setZoom(Math.min(8,state.zoom+0.5)); break;
+    case '-': setZoom(Math.max(0.2,state.zoom-0.5)); break;
+    case '1': setViewMode('quad'); break;
+    case '2': setViewMode('axial'); break;
+    case '3': setViewMode('coronal'); break;
+    case '4': setViewMode('sagittal'); break;
+    case '5': setViewMode('3d'); break;
+    case 'm': setActiveTool('measure'); break;
+    case 'n': setActiveTool('navigate'); break;
+  }
+});
+
+// ── RESIZE ────────────────────────────────────────────
+
+let resizeTimer;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(renderAll, 100);
+});
+
+// ── INIT ──────────────────────────────────────────────
+
+document.getElementById('status-text').textContent='READY';
+
+// Keyboard hint
+setTimeout(()=>{
+  toast('SHORTCUTS: 1-5 views · ↑↓ scroll · W/B/L presets · M measure · I invert · R reset');
+}, 1000);
+
+// Status
+setInterval(()=>{
+  const now=new Date();
+  const t=now.toTimeString().slice(0,8);
+  document.getElementById('status-text').textContent=state.volume?'ACTIVE':'READY';
+}, 5000);
+</script>
+</body>
+</html>
